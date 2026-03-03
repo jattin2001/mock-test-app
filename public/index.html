@@ -1,0 +1,262 @@
+<!doctype html>
+<html data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SSC Mock Test</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body onload="loadFullMock()">
+    <!-- CONFETTI CANVAS -->
+    <canvas id="confettiCanvas"></canvas>
+
+    <!-- PROGRESS BAR (top of screen) -->
+    <div id="topProgress">
+      <div id="topProgressFill"></div>
+    </div>
+
+    <!-- HEADER -->
+    <header>
+      <div class="header-left">
+        <span class="logo-icon">📋</span>
+        <h2>SSC Mock Test</h2>
+      </div>
+      <div class="header-center">
+        <div id="timerBox">
+          <span class="timer-icon">⏱️</span>
+          <span id="timer">60:00</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <button
+          class="dark-toggle"
+          onclick="toggleDark()"
+          title="Toggle dark mode"
+        >
+          🌙
+        </button>
+        <button class="submit-btn" onclick="submitTest()">Submit Test</button>
+      </div>
+    </header>
+
+    <!-- SECTION TABS -->
+    <div class="section-select" id="sectionSelect">
+      <button onclick="jumpSection('Quant')" data-sec="Quant">🔢 Quant</button>
+      <button onclick="jumpSection('Reasoning')" data-sec="Reasoning">
+        🧩 Reasoning
+      </button>
+      <button onclick="jumpSection('GS')" data-sec="GS">🌍 GS</button>
+      <button onclick="jumpSection('English')" data-sec="English">
+        📖 English
+      </button>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <div class="container" id="mainContainer">
+      <!-- MOCK QUESTION PANEL -->
+      <div class="question-panel" id="mockPanel">
+        <div class="q-meta" id="qMeta">
+          <span class="q-number" id="qNumber">Q1</span>
+          <span class="q-subject" id="qSubject">—</span>
+          <span class="q-difficulty" id="qDifficulty">Medium</span>
+        </div>
+
+        <div id="question"></div>
+        <div id="options"></div>
+
+        <div class="buttons">
+          <button class="btn-secondary" onclick="prevQuestion()">← Prev</button>
+          <button class="btn-warn" onclick="markReview()">
+            🔖 Mark Review
+          </button>
+          <button class="btn-danger" onclick="clearResponse()">✖ Clear</button>
+          <button class="btn-primary" onclick="saveNext()">
+            Save & Next →
+          </button>
+        </div>
+      </div>
+
+      <!-- REVIEW MODE PANEL -->
+      <div class="review-layout" id="reviewLayout">
+        <div id="reviewBox">
+          <div class="review-header">
+            <h2>📖 Review Mode</h2>
+            <button class="btn-secondary" onclick="backToResult()">
+              ⬅ Back to Result
+            </button>
+          </div>
+          <div id="reviewContent"></div>
+          <div id="reviewExplanation"></div>
+          <div class="review-nav">
+            <button class="btn-secondary" onclick="reviewPrev()">
+              ← Previous
+            </button>
+            <button class="btn-primary" onclick="reviewNext()">Next →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATUS BOX -->
+      <div id="statusBox">
+        <h4>Status</h4>
+        <div class="status-item">
+          <span class="dot dot-green"></span>Answered
+          <strong id="answeredCount">0</strong>
+        </div>
+        <div class="status-item">
+          <span class="dot dot-orange"></span>Review
+          <strong id="reviewCount">0</strong>
+        </div>
+        <div class="status-item">
+          <span class="dot dot-red"></span>Not Ans
+          <strong id="notCount">0</strong>
+        </div>
+      </div>
+
+      <!-- PALETTE -->
+      <div class="palette-panel">
+        <h3>Question Palette</h3>
+        <div id="reviewFilters" class="filters" style="display: none">
+          <button onclick="setFilter('all')">All</button>
+          <button onclick="setFilter('correct')">✅ Correct</button>
+          <button onclick="setFilter('wrong')">❌ Wrong</button>
+          <button onclick="setFilter('unattempted')">⏭ Skipped</button>
+        </div>
+        <div id="palette"></div>
+      </div>
+    </div>
+
+    <!-- ===================== RESULT BOX ===================== -->
+    <div id="resultBox">
+      <div class="result-header">
+        <span class="result-trophy" id="resultTrophy">🏆</span>
+        <h1 class="result-title" id="resultTitle">Exam Complete</h1>
+        <p class="result-subtitle" id="resultSubtitle">
+          Here's how you performed
+        </p>
+        <div class="grade-badge" id="gradeBadge">A</div>
+      </div>
+
+      <!-- Score Banner -->
+      <div class="score-banner">
+        <div class="score-main">
+          <span class="score-label">TOTAL SCORE</span>
+          <span id="rScore" class="score-value">—</span>
+          <span class="score-max">/ <span id="rMax">—</span></span>
+        </div>
+        <div class="score-stats">
+          <div class="stat-chip correct-chip">
+            <span class="chip-icon">✅</span>
+            <span class="chip-label">Correct</span>
+            <span class="chip-val" id="rCorrect">—</span>
+          </div>
+          <div class="stat-chip wrong-chip">
+            <span class="chip-icon">❌</span>
+            <span class="chip-label">Wrong</span>
+            <span class="chip-val" id="rWrong">—</span>
+          </div>
+          <div class="stat-chip skip-chip">
+            <span class="chip-icon">⏭️</span>
+            <span class="chip-label">Skipped</span>
+            <span class="chip-val" id="rSkipped">—</span>
+          </div>
+          <div class="stat-chip attempt-chip">
+            <span class="chip-icon">📝</span>
+            <span class="chip-label">Attempted</span>
+            <span class="chip-val" id="rAttempted">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overall Bar Chart -->
+      <div class="chart-card">
+        <h3 class="chart-title">📊 Overall Performance</h3>
+        <div class="overall-bars">
+          <div class="bar-row">
+            <span class="bar-label">Accuracy</span>
+            <div class="bar-track">
+              <div
+                class="bar-fill accuracy-bar"
+                id="barAccuracy"
+                style="width: 0%"
+              ></div>
+            </div>
+            <span class="bar-pct" id="rAccuracy">0%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Correct</span>
+            <div class="bar-track">
+              <div
+                class="bar-fill correct-bar"
+                id="barCorrect"
+                style="width: 0%"
+              ></div>
+            </div>
+            <span class="bar-pct" id="rCorrectPct">0 / 0</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Wrong</span>
+            <div class="bar-track">
+              <div
+                class="bar-fill wrong-bar"
+                id="barWrong"
+                style="width: 0%"
+              ></div>
+            </div>
+            <span class="bar-pct" id="rWrongPct">0 / 0</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Skipped</span>
+            <div class="bar-track">
+              <div
+                class="bar-fill skip-bar"
+                id="barSkipped"
+                style="width: 0%"
+              ></div>
+            </div>
+            <span class="bar-pct" id="rSkippedPct">0 / 0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subject Chart -->
+      <div class="chart-card">
+        <h3 class="chart-title">📚 Subject-wise Breakdown</h3>
+        <div id="subjectCharts"></div>
+      </div>
+
+      <!-- Leaderboard -->
+      <div class="chart-card">
+        <h3 class="chart-title">🏅 Your Past Attempts</h3>
+        <div id="leaderboard"></div>
+      </div>
+
+      <div class="result-actions">
+        <button class="review-btn" onclick="showReview()">
+          🔍 Review Answers
+        </button>
+        <button class="share-btn" onclick="shareScore()">📤 Share Score</button>
+      </div>
+    </div>
+
+    <!-- SHARE MODAL -->
+    <div id="shareModal" class="modal-overlay" onclick="closeShare()">
+      <div class="modal-box" onclick="event.stopPropagation()">
+        <h3>📤 Share Your Score</h3>
+        <div id="shareCard">
+          <div class="share-logo">📋 SSC Mock Test</div>
+          <div class="share-score-big" id="shareScoreBig">—</div>
+          <div class="share-stats" id="shareStats">—</div>
+          <div class="share-date" id="shareDate">—</div>
+        </div>
+        <div class="share-actions">
+          <button onclick="copyShareText()">📋 Copy Text</button>
+          <button onclick="closeShare()">✖ Close</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
