@@ -1,4 +1,5 @@
 const express = require("express");
+const PORT = process.env.PORT || 3000;
 
 const Attempt = require("./models/Attempt");
 const app = express();
@@ -16,6 +17,7 @@ app.post("/submit", async (req, res) => {
     res.status(500).json({ error: "Failed to save attempt" });
   }
 });
-app.listen(3000, () => {
-  console.log("Server running on http://localhost:3000");
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
